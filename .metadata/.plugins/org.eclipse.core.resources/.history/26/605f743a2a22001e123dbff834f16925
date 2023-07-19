@@ -1,0 +1,204 @@
+package com.amazon.qa.pages;
+
+import java.util.Iterator;
+import java.util.List;
+import java.util.Set;
+import org.openqa.selenium.By;
+import org.openqa.selenium.JavascriptExecutor;
+import org.openqa.selenium.WebElement;
+import org.openqa.selenium.support.FindBy;
+import org.openqa.selenium.support.PageFactory;
+import org.testng.Assert;
+import org.testng.Reporter;
+import com.amazon.qa.base.TestBase;
+import com.amazon.qa.util.Screenshot;
+
+public class HomePage extends TestBase {
+	float SubTotalAmount;
+	Screenshot screenshot;
+	String productName;
+
+	@FindBy(xpath = "//a[contains(@id,'logo')]")
+	WebElement amazonLogo;
+
+	@FindBy(xpath = "//input[contains(@id,'searchtextbox')]")
+	WebElement searchBox;
+
+	@FindBy(xpath = "//input[contains(@id,'submit-button')]")
+	WebElement searchBtn;
+
+	@FindBy(xpath = "//input[contains(@id,'add-to-cart')]")
+	WebElement addToCartBtn;
+
+	@FindBy(xpath = "//input[contains(@aria-labelledby,'view-cart-button')]")
+	WebElement cartBtn;
+
+	//@FindBy(xpath = "//span[@class='a-size-medium a-color-base sc-price sc-white-space-nowrap']")
+	@FindBy(xpath = "//div[contains(@data-name,'Subtotals')] //span[contains(text(),'sc-price')]")
+	WebElement subTotalAmt;
+
+	@FindBy(xpath = "//div[contains(@class,'list-item')] //span[contains(@class,'sc-product-price')]")
+	WebElement priceOfProduct;
+
+	public HomePage() {
+		PageFactory.initElements(driver, this);
+		screenshot = new Screenshot();
+	}
+
+	public String getTitleOfPage() {
+		try {
+			screenshot.captureScreenshot();
+			return driver.getTitle();
+		} catch (Exception e) {
+			e.printStackTrace();
+			return null;
+		}
+	}
+
+	public void validateTheTitleOfPageLanded() {
+		String title = getTitleOfPage();
+		Assert.assertEquals(title,
+				"Online Shopping site in India: Shop Online for Mobiles, Books, Watches, Shoes and More - Amazon.in");
+		if (title.contains("Online Shopping site in India:")) {
+			System.out.println("The page is loaded successfully.");
+		} else {
+			System.out.println("The page is not loaded successfully.");
+		}
+	}
+
+	public boolean logoIsDisplayed() {
+		try {
+			Assert.assertTrue(amazonLogo.isDisplayed(),
+					"Logo is displayed successfully, amazon page loaded successfully.");
+			screenshot.captureScreenshot();
+			Reporter.log("Amazon logo is displayed.");
+			return true;
+		} catch (Exception e) {
+			e.printStackTrace();
+			return false;
+		}
+	}
+
+	public void eneterProductName(String productName) {
+		try {
+			this.searchBox.clear();
+			this.searchBox.click();
+			this.searchBox.sendKeys(productName);
+			screenshot.captureScreenshot();
+			Reporter.log("Entered product name.");
+		} catch (Exception e) {
+			e.printStackTrace();
+		}
+	}
+
+	public void clickOnSearchButton() {
+		try {
+			this.searchBtn.click();
+			screenshot.captureScreenshot();
+			Reporter.log("Clicked on search button.");
+		} catch (Exception e) {
+			e.printStackTrace();
+		}
+	}
+
+	public void selectProductFromResultsShown(int index) {
+		try {
+			List<WebElement> results = driver.findElements(By.xpath(
+					"//h2[@class='a-size-mini a-spacing-none a-color-base s-line-clamp-2'] //a[@class='a-link-normal s-underline-text s-underline-link-text s-link-style a-text-normal']"));
+			if (index >= 0 && index < results.size()) {
+				WebElement product = results.get(index);
+				productName = product.getText();
+				System.out.println("Product Name on which clicked: " + productName);
+				Reporter.log("Product Name on which clicked: " + productName);
+				product.click();
+				screenshot.captureScreenshot();
+			} else {
+				System.out.println("Invalid index provided.");
+				Reporter.log("Invalid index provided.");
+			}
+		} catch (Exception e) {
+			e.printStackTrace();
+		}
+	}
+
+	public void clickOnAddToCartButton() {
+		try {
+			screenshot.captureScreenshot();
+			JavascriptExecutor js = (JavascriptExecutor) driver;
+			js.executeScript("arguments[0].scrollIntoView()", addToCartBtn);
+			js.executeScript("arguments[0].click()", addToCartBtn);
+			screenshot.captureScreenshot();
+			Reporter.log("Clicked on add to cart button.");
+		} catch (Exception e) {
+			e.printStackTrace();
+		}
+	}
+
+	public void clickOnCartButton() {
+		try {
+			JavascriptExecutor js = (JavascriptExecutor) driver;
+			js.executeScript("arguments[0].scrollIntoView()", cartBtn);
+			waitForVisibilityOfElement(cartBtn);
+			this.cartBtn.click();
+			screenshot.captureScreenshot();
+			System.out.println("Clicked on cart button.");
+			Reporter.log("Clicked on cart button.");
+		} catch (Exception e) {
+			e.printStackTrace();
+		}
+	}
+
+	public void swicthToWindowByTitle() {
+		try {
+			Set<String> windowHandles = driver.getWindowHandles();
+			Iterator<String> iterator = windowHandles.iterator();
+			while (iterator.hasNext()) {
+				String handle = iterator.next();
+				driver.switchTo().window(handle);
+				if (driver.getTitle().equals(productName)) {
+					System.out.println("Page Title: " + driver.getTitle());
+					Reporter.log("Page Title: " + driver.getTitle());
+				}
+			}
+		} catch (Exception e) {
+			e.printStackTrace();
+		}
+	}
+
+	public void verifySubTotalAmtIsEqualToPriceOfAllProductsInCart() {
+		try {
+			screenshot.captureScreenshot();
+			String subTotalAmount = this.subTotalAmt.getText();
+			try {
+				SubTotalAmount = Float.parseFloat(subTotalAmount);
+			} catch (NumberFormatException ex) {
+			}
+			System.out.println("Subtotal amount: " + subTotalAmount);
+			Reporter.log("Subtotal amount: " + subTotalAmount);
+			List<WebElement> results = driver.findElements(By.xpath(
+					"//div[@class='sc-list-item-content'] //span[@class='a-size-medium a-color-base sc-price sc-white-space-nowrap sc-product-price a-text-bold']"));
+			System.out.println("Number of products in cart: " + results.size());
+			Reporter.log("Number of products in cart: " + results.size());
+			float total = 0;
+			for (int i = 0; i < results.size(); i++) {
+				String priceOfProduct = this.priceOfProduct.getText();
+				try {
+					total = total + Float.parseFloat(priceOfProduct);
+				} catch (NumberFormatException ex) {
+				}
+			}
+			Assert.assertEquals(SubTotalAmount, total, "Both values are equal");
+			if (SubTotalAmount == total) {
+				System.out.println("The addition of amount of all the products in cart is same to subtotal amount is :"
+						+ subTotalAmount);
+				Reporter.log("The addition of amount of all the products in cart is same to subtotal amount is :"
+						+ subTotalAmount);
+			} else {
+				System.out.println("The amount is mismatched.");
+				Reporter.log("The amount is mismatched.");
+			}
+		} catch (Exception e) {
+			e.printStackTrace();
+		}
+	}
+}

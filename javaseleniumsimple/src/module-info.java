@@ -1,0 +1,9 @@
+/**
+ * 
+ */
+/**
+ * @author apathrut
+ *
+ */
+module javaseleniumsimple {
+}

@@ -1,0 +1,24 @@
+package com.amazon.qa.util;
+
+import java.io.File;
+import java.text.SimpleDateFormat;
+import java.util.Date;
+import org.apache.commons.io.FileUtils;
+import org.openqa.selenium.OutputType;
+import org.openqa.selenium.TakesScreenshot;
+import org.testng.Reporter;
+import com.amazon.qa.base.TestBase;
+
+public class Screenshot extends TestBase {
+
+	public void captureScreenshot() throws Exception {
+		String ScreenshotName = new SimpleDateFormat("MMddmmssSSS").format(new Date());
+
+		File scrFile = ((TakesScreenshot) driver).getScreenshotAs(OutputType.FILE);
+		File screenshotName = new File("./screenshots/" + ScreenshotName + ".png");
+		FileUtils.copyFile(scrFile, screenshotName);
+		Reporter.log("<a target=\"_blank\" href= \"C:\\Users\\APATHRUT\\eclipse-workspace\\ecommerce\\screenshots\\"
+				+ ScreenshotName + ".png\">Screenshot</a>");
+	}
+
+}

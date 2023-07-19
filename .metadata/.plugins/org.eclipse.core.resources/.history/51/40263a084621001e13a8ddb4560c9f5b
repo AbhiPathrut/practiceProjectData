@@ -1,0 +1,41 @@
+package com.amazon.qa.base;
+
+import org.openqa.selenium.WebDriver;
+import org.openqa.selenium.chrome.ChromeDriver;
+import org.openqa.selenium.edge.EdgeDriver;
+import org.openqa.selenium.firefox.FirefoxDriver;
+import java.time.Duration;
+import io.github.bonigarcia.wdm.WebDriverManager;
+import org.openqa.selenium.support.ui.WebDriverWait;
+
+public class TestBase {
+	public static WebDriver driver;
+	WebDriverWait wait;
+
+	public TestBase() {
+	}
+
+	public static void initialization(String browserName, String url) throws Exception {
+		if (browserName.equals("chrome")) {
+			WebDriverManager.chromedriver().setup();
+			driver = new ChromeDriver();
+		} else if (browserName.equals("edge")) {
+			WebDriverManager.edgedriver().setup();
+			driver = new EdgeDriver();
+		} else {
+			WebDriverManager.firefoxdriver().setup();
+			driver = new FirefoxDriver();
+		}
+		;
+		wait = new WebDriverWait(driver, Duration.ofSeconds(20));
+		driver.manage().window().maximize();
+		driver.manage().deleteAllCookies();
+		driver.manage().timeouts().implicitlyWait(Duration.ofSeconds(10));
+		driver.manage().timeouts().scriptTimeout(Duration.ofSeconds(30));
+		driver.manage().timeouts().pageLoadTimeout(Duration.ofSeconds(60));
+		driver.get(url);
+		Thread.sleep(2000);
+
+	}
+
+}
